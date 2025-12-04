@@ -13,6 +13,7 @@ from django.shortcuts import get_object_or_404
 
 class MaestrosAll(generics.CreateAPIView):
     #Esta función es esencial para todo donde se requiera autorización de inicio de sesión (token)
+    authentication_classes = []
     permission_classes = (permissions.IsAuthenticated,)
     # Invocamos la petición GET para obtener todos los maestros
     def get(self, request, *args, **kwargs):

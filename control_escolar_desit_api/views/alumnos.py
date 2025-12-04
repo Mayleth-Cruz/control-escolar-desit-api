@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404
 
 class AlumnosAll(generics.CreateAPIView):
     #Verificar si el usuario esta autenticado
+    authentication_classes = []
     permission_classes = (permissions.IsAuthenticated,)
     def get(self, request, *args, **kwargs):
         alumnos = Alumnos.objects.filter(user__is_active = 1).order_by("id")
