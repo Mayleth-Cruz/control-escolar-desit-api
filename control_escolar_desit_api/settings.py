@@ -1,17 +1,13 @@
 import os
-from pathlib import Path
-import dj_database_url
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = os.environ.get('SECRET_KEY', '-_&+lsebec(whhw!%n@ww&1j=4-^j_if9x8$q778+99oz&!ms2')
+# Mantén la clave secreta en variables de entorno en producción
+SECRET_KEY = '-_&+lsebec(whhw!%n@ww&1j=4-^j_if9x8$q778+99oz&!ms2'
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True  # en desarrollo
 
-# Para Railway y Render, incluye *.railway.app y *.onrender.com por defecto si no se especifica ALLOWED_HOSTS
-default_hosts = 'localhost,127.0.0.1,*.railway.app,*.onrender.com'
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', default_hosts).split(',')
-
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -19,18 +15,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_filters',
+    'django_filters',                 # necesarios para los filtros de DRF
     'rest_framework',
-    'rest_framework.authtoken',
-    'corsheaders',
+    'rest_framework.authtoken',       # conserva soporte de tokens de DRF
+    'corsheaders',                    # librería CORS actualizada
     'control_escolar_desit_api',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',     # CORS debe ir antes de CommonMiddleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -38,28 +33,25 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    'CORS_ALLOWED_ORIGINS',
-    'http://localhost:4200,https://lavender-cat-827556.hostingersite.com'
-).split(',')
-
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    CORS_ALLOW_CREDENTIALS = True
-    CORS_ALLOW_HEADERS = [
-        'accept',
-        'accept-encoding',
-        'authorization',
-        'content-type',
-        'dnt',
-        'origin',
-        'user-agent',
-        'x-csrftoken',
-        'x-requested-with',
-    ]
+# Configuración de CORS: define orígenes permitidos y quita CORS_ORIGIN_ALLOW_ALL
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:4200',
+]
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'control_escolar_desit_api.urls'
+
+
+
+import os
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+STATIC_URL = "/static/"
+# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+# TEMPLATES[0]["DIRS"] = [os.path.join(BASE_DIR, "templates")]
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 TEMPLATES = [
     {
@@ -79,43 +71,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'control_escolar_desit_api.wsgi.application'
 
-# Prioridad: DATABASE_URL > USE_SQLITE_FOR_BUILD > my.cnf (MySQL local) > SQLite por defecto
-if 'DATABASE_URL' in os.environ:
-    # Railway y otros servicios cloud proporcionan DATABASE_URL automáticamente
-    DATABASES = {
-        'default': dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)
-    }
-    print(f"Usando base de datos desde DATABASE_URL: {os.environ['DATABASE_URL'][:50]}...")
-elif os.environ.get('USE_SQLITE_FOR_BUILD', 'False') == 'True':
-    # Para builds que no necesitan base de datos real
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': os.path.join(BASE_DIR, "my.cnf"),
+            'charset': 'utf8mb4',
         }
     }
-    print("Usando SQLite para build")
-elif os.path.exists(os.path.join(BASE_DIR, "my.cnf")):
-    # MySQL local (solo para desarrollo local)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'OPTIONS': {
-                'read_default_file': os.path.join(BASE_DIR, "my.cnf"),
-                'charset': 'utf8mb4',
-            }
-        }
-    }
-    print("Usando MySQL local desde my.cnf")
-else:
-    # SQLite por defecto (solo para desarrollo)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-    print("Usando SQLite por defecto")
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -131,10 +95,6 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     'COERCE_DECIMAL_TO_STRING': False,

@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: Api
+    env: python
+    buildCommand: pip install -r requirements.txt && USE_SQLITE_FOR_BUILD=True python manage.py collectstatic --noinput --skip-checks
+    startCommand: ./start.sh
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: control_escolar_desit_api.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: DATABASE_URL
+        fromDatabase:
+          name: control-escolar-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: api-pdp2.onrender.com,*.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://lavender-cat-827556.hostingersite.com,https://tu-frontend.onrender.com,http://localhost:4200
+
+databases:
+  - name: control-escolar-db
+    databaseName: control_escolar_desit_db_031u
+    user: control_escolar_user
+    plan: free
+
